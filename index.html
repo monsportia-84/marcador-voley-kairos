@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#08111f" />
+  <title>CV Kairos · Marcador 5-1</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .reception-court{display:block;overflow:visible}
+    .reception-slot{position:absolute;left:var(--left);top:var(--top);width:23%;height:18%;transform:translate(-50%,-50%);padding:3px;background:rgba(19,69,107,.88);border:3px solid #0e315b;border-radius:50%;aspect-ratio:1}
+    .reception-slot .position{font-size:11px;line-height:1;color:#fff;font-weight:800}
+    .reception-slot strong{position:absolute;top:calc(100% + 4px);width:180%;font-size:12px;color:#182738;font-weight:800;white-space:normal;line-height:1.1}
+    .reception-slot small{position:absolute;top:calc(100% + 18px);width:160%;font-size:9px;color:#5f4a2d}
+    .reception-court .reception-slot:nth-child(2n){background:#5eae43}
+    .reception-court .reception-slot:nth-child(3n){background:#ed5d48}
+    .serve-slot{width:76%;height:auto;aspect-ratio:1;justify-self:center;align-self:center;padding:3px;background:#478bc8;border:3px solid #173d73;border-radius:50%;position:relative}
+    .serve-slot .position{font-size:clamp(14px,3.5vw,22px);line-height:1;color:#fff;font-weight:800}
+    .serve-slot strong{position:absolute;top:calc(100% + 4px);width:170%;font-size:12px;color:#182738;font-weight:800;white-space:normal;line-height:1.1}
+    .serve-slot small{position:absolute;top:calc(100% + 18px);width:150%;font-size:9px;color:#5f4a2d}
+    .role-CO{background:#ef5c48!important}.role-OP{background:#ef5c48!important}.role-Rc1{background:#6eaf42!important}.role-Rc2{background:#6eaf42!important}.role-C1{background:#5597d0!important}.role-C2{background:#5597d0!important}
+  </style>
+</head>
+<body>
+  <!-- Cabecera general de la aplicación y acceso para preparar un nuevo set. -->
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">CV KAIROS</span>
+        <h1>Marcador 5-1</h1>
+      </div>
+      <button class="ghost-button" id="restartButton" type="button">Nuevo set</button>
+    </header>
+
+    <!-- Pantalla de configuración: plantilla, alineación, rotación y saque inicial. -->
+    <section id="setupView" class="view active" aria-labelledby="setupTitle">
+      <div class="intro-block">
+        <span class="step-chip">Configuración del set</span>
+        <h2 id="setupTitle">Prepara la alineación</h2>
+        <p>Registra hasta 14 jugadores, asigna sus puestos y elige los seis que comienzan el set.</p>
+      </div>
+
+      <div class="setup-grid">
+        <!-- Paso 1: alta y gestión de los jugadores de la plantilla. -->
+        <section class="panel roster-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">Paso 1</span>
+              <h3>Plantilla</h3>
+            </div>
+            <span class="counter" id="rosterCount">0 / 14</span>
+          </div>
+          <form id="playerForm" class="player-form">
+            <input id="playerName" type="text" maxlength="24" placeholder="Nombre del jugador" autocomplete="off" required />
+            <select id="playerRole" aria-label="Puesto del jugador">
+              <option value="Colocador">Colocador</option>
+              <option value="Receptor">Receptor</option>
+              <option value="Central">Central</option>
+              <option value="Opuesto">Opuesto</option>
+              <option value="Líbero / Otro">Líbero / Otro</option>
+            </select>
+            <button class="primary-button" type="submit">Añadir</button>
+          </form>
+          <div id="rosterList" class="roster-list empty-state">Añade los jugadores de la plantilla.</div>
+        </section>
+
+        <!-- Paso 2: asignación de los seis jugadores a las posiciones de salida. -->
+        <section class="panel lineup-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">Paso 2</span>
+              <h3>Alineación inicial</h3>
+            </div>
+            <span class="formation-badge">5 - 1</span>
+          </div>
+          <p class="muted">Indica qué jugador ocupa cada posición de juego.</p>
+          <div id="lineupFields" class="lineup-fields"></div>
+          <div class="setup-options">
+            <label>Rotación inicial
+              <select id="initialRotation">
+                <option value="1">R1</option><option value="6">R6</option><option value="5">R5</option>
+                <option value="4">R4</option><option value="3">R3</option><option value="2">R2</option>
+              </select>
+            </label>
+            <label>Inicio del partido
+              <select id="initialPhase">
+                <option value="serve">CV Kairos saca</option>
+                <option value="receive">CV Kairos recibe</option>
+              </select>
+            </label>
+          </div>
+          <button id="startMatchButton" class="primary-button wide" type="button">Iniciar set</button>
+          <p id="setupError" class="form-error" role="alert"></p>
+        </section>
+      </div>
+
+      <!-- Referencia rápida de la formación R1 definida en el PPT. -->
+      <section class="reference-strip">
+        <div>
+          <span class="section-kicker">Referencia del documento</span>
+          <strong>Formación base R1 en saque</strong>
+        </div>
+        <div class="role-sequence"><span>1 · CO</span><span>2 · Rc1</span><span>3 · C2</span><span>4 · OP</span><span>5 · Rc2</span><span>6 · C1</span></div>
+      </section>
+    </section>
+
+    <!-- Pantalla de partido: marcador, rotación, pista y acciones de punto. -->
+    <section id="matchView" class="view" aria-labelledby="matchTitle">
+      <div class="scoreboard panel">
+        <div class="score-team home-team"><span class="team-label">LOCAL</span><strong>CV Kairos</strong><span id="homeScore" class="score">0</span><span id="homeStatus" class="serve-status">Saca</span></div>
+        <div class="match-meta"><span id="setLabel">Set 1</span><span class="versus">VS</span><span id="setMessage">En juego</span></div>
+        <div class="score-team away-team"><span class="team-label">VISITANTE</span><strong>Visitante</strong><span id="awayScore" class="score">0</span><span class="serve-status neutral">Resta</span></div>
+      </div>
+
+      <div class="match-toolbar">
+        <div><span class="section-kicker">Rotación local</span><h2 id="matchTitle">R1 · En saque</h2></div>
+        <div class="set-record"><span>Sets</span><strong><span id="homeSets">0</span> - <span id="awaySets">0</span></strong></div>
+      </div>
+
+      <!-- La pista se rellena dinámicamente desde app.js según saque o recepción. -->
+      <section class="court-card panel">
+        <div class="court-header"><div><span class="section-kicker">Sistema 5 - 1</span><h3>Posiciones en pista</h3></div><span id="phaseBadge" class="phase-badge">Saque</span></div>
+        <div id="court" class="court" aria-label="Posiciones del equipo local"></div>
+        <div id="bench" class="bench"></div>
+      </section>
+
+      <div class="match-actions">
+        <button id="homePointButton" class="point-button home-point" type="button"><span>+</span> Punto CV Kairos</button>
+        <button id="awayPointButton" class="point-button away-point" type="button"><span>+</span> Punto visitante</button>
+      </div>
+      <button id="substituteButton" class="secondary-button wide" type="button">Hacer cambio de jugador</button>
+      <p id="matchNotice" class="match-notice" aria-live="polite"></p>
+    </section>
+
+    <!-- Ventana modal para realizar cambios durante el set. -->
+    <div id="substitutionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="substitutionTitle">
+      <div class="modal-card">
+        <div class="modal-heading"><div><span class="section-kicker">Gestión del equipo</span><h3 id="substitutionTitle">Cambio de jugador</h3></div><button id="closeModalButton" class="icon-button" type="button" aria-label="Cerrar">×</button></div>
+        <label>Posición en pista<select id="subPosition"></select></label>
+        <label>Jugador suplente<select id="subPlayer"></select></label>
+        <button id="confirmSubButton" class="primary-button wide" type="button">Confirmar cambio</button>
+        <p id="subError" class="form-error"></p>
+      </div>
+    </div>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
